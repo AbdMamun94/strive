@@ -145,19 +145,23 @@ dataset
 dataset.target
 
 
-# In[ ]:
+# In[22]:
 
 
 def dataset_to_pandas():
     #put the dataset into a pandas DF using the feature names as columnsç
     #rename the column name so the dont include the '(cm)'
     #add 2 columns one with the target and another with the target_names
-    
-    # YOUR CODE HERE
+    df = pd.DataFrame(dataset.data,columns=['sepal length', 'sepal width', 'petal length', 'petal width'])
+    df['target']=dataset.target
+    df['class']=dataset.target_names[dataset.target]
+    #df['target_names']=load_data().target_names
+    return df
+   
     raise NotImplementedError()
 
 
-# In[ ]:
+# In[23]:
 
 
 df = dataset_to_pandas()
@@ -169,18 +173,24 @@ assert df['target'].shape == (150,)
 assert df['class'].shape == (150,)
 
 
+# In[24]:
+
+
+df
+
+
 # ### Question
 # Find the X and y values we're looking for. Notice that y is categorical and thus, we could **one-hot encode it** if we are looking at **class** or we can just pick **target**. In order to one hot encode we have  to re-shape `y` it using the **.get_dummies** function. 
 # 
 # ## For the purpose of this exercise, do not use hot encoding, go only for target but think about if you have to drop it somewhere or not...
 
-# In[ ]:
+# In[28]:
 
 
 df_iris = dataset_to_pandas()
 
 
-# In[ ]:
+# In[29]:
 
 
 # virginica close to versicolor BAD
@@ -195,11 +205,21 @@ df_iris = dataset_to_pandas()
 
 
 def ohe():
+    ohe_data=pd.get_dummies(df_iris,prefix="data")
+    
+    return ohe_data
+
     # YOUR CODE HERE
-    raise NotImplementedError()
+    #raise NotImplementedError()
 
 
-# In[ ]:
+# In[30]:
+
+
+ohe()
+
+
+# In[32]:
 
 
 ohe_data = ohe()
@@ -216,18 +236,25 @@ assert ohe_data.shape == (150,8)
 # 3. Check the shape of X and Y. Check the first few values.
 #     - Can we confirm our X and Y are created correctly?
 
-# In[ ]:
+# In[33]:
 
 
 def target_to_numpy():
     # YOUR CODE HERE
-    raise NotImplementedError()
+    y = ohe_data["target"].to_numpy()
+
+    return y
+    
+    #raise NotImplementedError()
 def data_to_numpy():
     # YOUR CODE HERE
-    raise NotImplementedError()
+    x = ohe_data[['sepal length','sepal width']].to_numpy()
+    return x
+    
+    #raise NotImplementedError()
 
 
-# In[ ]:
+# In[34]:
 
 
 Y = target_to_numpy()
@@ -237,7 +264,7 @@ assert isinstance(X, np.ndarray)
 assert X.shape == (150,2)
 
 
-# In[ ]:
+# In[35]:
 
 
 #your code here
@@ -265,15 +292,15 @@ X[:5]
 #     - We will pass the X_train and Y_train variables to the ```.fit()``` method.
 #     - Once the model is fit, use the ```.predict()``` with the X_test and save the output as predictions.
 
-# In[ ]:
+# In[37]:
 
 
 #split train and test data 80/20
 #your code here
-X_train, X_test, Y_train, Y_test = 0,0,0,0
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.2,random_state=42,stratify=Y)
 
 # YOUR CODE HERE
-raise NotImplementedError()
+#raise NotImplementedError()
 
 print(X_train.shape)
 print(Y_train.shape)
@@ -281,7 +308,13 @@ print(X_test.shape)
 print(Y_test.shape)
 
 
-# In[ ]:
+# In[38]:
+
+
+X_train
+
+
+# In[49]:
 
 
 assert X_train.shape == (120,2)
@@ -290,20 +323,29 @@ assert X_test.shape  == (30,2)
 assert Y_test.shape  == (30,)
 
 
-# In[ ]:
+# In[50]:
 
 
 #normalize the dataset
 #your code here
+scaler = StandardScaler()
+X_train=scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
 #create and fit the scaler object on the training data
 # YOUR CODE HERE
-raise NotImplementedError()
+#raise NotImplementedError()
 
 X_train[:5]
 
 
-# In[ ]:
+# In[51]:
+
+
+Y_train[:5]
+
+
+# In[52]:
 
 
 assert np.amin(X_train) >= -2.5
@@ -312,20 +354,25 @@ assert np.amin(X_test) >= -2
 assert np.amin(X_test) <= 2.75
 
 
-# In[ ]:
+# In[53]:
 
 
 #initalize and fit with Logistic Regression
-prediction = 0
+#prediction = 0
 #your code here
+model_standard = LogisticRegression()
+
+model_standard.fit(X_train,Y_train)
+
+predictions = model_standard.predict(X_test)
 
 #initalize the logistic regressor
 #make predictions
 # YOUR CODE HERE
-raise NotImplementedError()
+#raise NotImplementedError()
 
 
-# In[ ]:
+# In[54]:
 
 
 assert predictions.shape == (30,)
@@ -337,14 +384,16 @@ assert predictions.shape == (30,)
 # 
 # 1. Use ```.score()``` to evaluate the performance of our first model.
 
-# In[ ]:
+# In[55]:
 
 
-score = 0
+#score = 0
 #evaluating the performace of our first model
 #your code here
 # YOUR CODE HERE
-raise NotImplementedError()
+score = accuracy_score(Y_test,predictions)
+#raise NotImplementedError()
+score
 
 
 # In[ ]:
@@ -374,17 +423,19 @@ assert score >=0.73
 # 1. Initalize a new version of the model you trained above with the same paramters.
 # 2. Use ```cross_validate()``` to run the model with 5 crossvalidation folds. 
 
-# In[ ]:
+# In[57]:
 
 
 #model with cross validation
 #your code here
-
+model_cross = LogisticRegression()
+cv = cross_validate(model_cross,X_train,Y_train,cv=5)
 #cross validate the training set
-clf_cv = 0
-CV = 0
+#clf_cv = 0
+#CV = 0
 # YOUR CODE HERE
-raise NotImplementedError()
+
+#raise NotImplementedError()
 
 def print_scores(cv):
     #print out cross validation scores
@@ -417,7 +468,7 @@ assert cv['test_score'].mean() >= 0.77
 # 3. Input the pipeline object to the cross_validator and evaluate with 5 folds.
 # 4. Print out your results (hint: make a function for repetitve tasks like printing)
 
-# In[ ]:
+# In[58]:
 
 
 #define the scaler
@@ -425,12 +476,17 @@ assert cv['test_score'].mean() >= 0.77
 #make the pipeline
 #run the cross validation
 #print results
-scaler = 0
-classifier = 0
-pipe = 0
-scores = 0
+# scaler = 0
+# classifier = 0
+# pipe = 0
+# scores = 0
 # YOUR CODE HERE
-raise NotImplementedError()
+#raise NotImplementedError()
+scaler = preprocessing.StandardScaler()
+classifier = LogisticRegression()
+pipe = make_pipeline(scaler,classifier)
+cv = cross_validate(pipe,X_train,Y_train,cv=5)
+print_scores(cv)
 
 
 # In[ ]:
@@ -451,37 +507,51 @@ assert cv['test_score'].mean() >= 0.74
 #     - Hint: Input the pipeline directly into GridSearchCV
 # 3. Try a different models like RandomForest or SVM.
 
+# In[59]:
+
+
+# YOUR CODE HERE
+#raise NotImplementedError()
+df = dataset_to_pandas()
+X = df.drop(['target','class'], axis=1).to_numpy()
+Y = df['target'].to_numpy()
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.20, random_state=42)
+
+
+# In[60]:
+
+
+# YOUR CODE HERE
+#raise NotImplementedError()
+cv = cross_validate(pipe, X_train, Y_train, cv=5)
+print_scores(cv)
+
+
+# In[61]:
+
+
+# YOUR CODE HERE
+#raise NotImplementedError()
+classifier = RandomForestClassifier()
+cv = cross_validate(classifier, X_train, Y_train, cv=5)
+print_scores(cv)
+
+
+# In[62]:
+
+
+# YOUR CODE HERE
+#raise NotImplementedError()
+scaler = preprocessing.StandardScaler()
+classifier = SVC(C=10, kernel='linear')
+pipe = make_pipeline(scaler, classifier)
+cv = cross_validate(pipe, X_train, Y_train, cv=5)
+print_scores(cv)
+
+
 # In[ ]:
 
 
 # YOUR CODE HERE
-raise NotImplementedError()
-
-
-# In[ ]:
-
-
-# YOUR CODE HERE
-raise NotImplementedError()
-
-
-# In[ ]:
-
-
-# YOUR CODE HERE
-raise NotImplementedError()
-
-
-# In[ ]:
-
-
-# YOUR CODE HERE
-raise NotImplementedError()
-
-
-# In[ ]:
-
-
-# YOUR CODE HERE
-raise NotImplementedError()
+#raise NotImplementedError()
 
